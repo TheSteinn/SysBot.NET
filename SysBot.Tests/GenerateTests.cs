@@ -21,6 +21,18 @@ namespace SysBot.Tests
             var pk = sav.GetLegal(template, out _);
             pk.Should().NotBeNull();
         }
+        
+        [Theory]
+        [InlineData(Pikachu)]
+        public void CanGenerateWithBall(string set)
+        {
+            var sav = AutoLegalityWrapper.GetTrainerInfo<PK9>();
+            var s = new ShowdownSet(set);
+            var template = AutoLegalityWrapper.GetTemplate(s);
+            var pk = sav.GetLegal(template, out _);
+            pk.Should().NotBeNull();
+            pk.Ball.Should().Be((int) Ball.Luxury);
+        }
 
         [Theory]
         [InlineData(InavlidSpec)]
@@ -120,5 +132,17 @@ Timid Nature
 
         private const string InavlidSpec =
 "(Pikachu)";
+        
+        private const string Pikachu = 
+@"Pikachu @ Master Ball 
+Ability: Static 
+Shiny: Yes 
+EVs: 252 SpA / 4 SpD / 252 Spe 
+Ball: Luxury
+Timid Nature 
+- Agility  
+- Thunder  
+- Iron Tail  
+- Quick Attack";
     }
 }
