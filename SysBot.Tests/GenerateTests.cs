@@ -21,17 +21,19 @@ namespace SysBot.Tests
             var pk = sav.GetLegal(template, out _);
             pk.Should().NotBeNull();
         }
-        
+
         [Theory]
-        [InlineData(Pikachu)]
-        public void CanGenerateWithBall(string set)
+        [InlineData(Pikachu, Ball.Luxury)]
+        [InlineData(Dudunsparce, Ball.Beast)]
+        [InlineData(Arceus, Ball.Moon)]
+        public void CanGenerateWithBall(string set, Ball ball)
         {
             var sav = AutoLegalityWrapper.GetTrainerInfo<PK9>();
             var s = new ShowdownSet(set);
             var template = AutoLegalityWrapper.GetTemplate(s);
             var pk = sav.GetLegal(template, out _);
             pk.Should().NotBeNull();
-            pk.Ball.Should().Be((int) Ball.Luxury);
+            pk.Ball.Should().Be((int)ball);
         }
 
         [Theory]
@@ -76,7 +78,7 @@ namespace SysBot.Tests
         }
 
         private const string Gengar =
-@"Gengar-Gmax @ Life Orb 
+            @"Gengar-Gmax @ Life Orb 
 Ability: Cursed Body 
 Shiny: Yes 
 EVs: 252 SpA / 4 SpD / 252 Spe 
@@ -87,7 +89,7 @@ Timid Nature
 - Headbutt";
 
         private const string Braviary =
-@"Braviary (F) @ Master Ball
+            @"Braviary (F) @ Master Ball
 Ability: Defiant
 EVs: 252 Atk / 4 SpD / 252 Spe
 Jolly Nature
@@ -97,7 +99,7 @@ Jolly Nature
 - Iron Head";
 
         private const string Drednaw =
-@"Drednaw-Gmax @ Fossilized Drake 
+            @"Drednaw-Gmax @ Fossilized Drake 
 Ability: Shell Armor 
 Level: 60 
 EVs: 252 Atk / 4 SpD / 252 Spe 
@@ -108,7 +110,7 @@ Adamant Nature
 - Head Smash";
 
         private const string Torkoal2 =
-@"Torkoal (M) @ Assault Vest
+            @"Torkoal (M) @ Assault Vest
 IVs: 0 Atk
 EVs: 248 HP / 8 Atk / 252 SpA
 Ability: Drought
@@ -119,7 +121,7 @@ Quiet Nature
 - Fire Blast";
 
         private const string Charizard4 =
-@"Charizard @ Choice Scarf 
+            @"Charizard @ Choice Scarf 
 Ability: Solar Power 
 Level: 50 
 Shiny: Yes 
@@ -131,10 +133,10 @@ Timid Nature
 - Beat Up";
 
         private const string InavlidSpec =
-"(Pikachu)";
-        
-        private const string Pikachu = 
-@"Pikachu @ Master Ball 
+            "(Pikachu)";
+
+        private const string Pikachu =
+            @"Pikachu @ Master Ball 
 Ability: Static 
 Shiny: Yes 
 EVs: 252 SpA / 4 SpD / 252 Spe 
@@ -144,5 +146,24 @@ Timid Nature
 - Thunder  
 - Iron Tail  
 - Quick Attack";
+
+        private const string Dudunsparce =
+            @"Dudunsparce @ Ability Patch
+Ability: Rattled
+Shiny: Yes
+Level: 95
+Ball: Beast
+EVs: 252 Atk / 252 Spe / 4 Def
+IVs: 0 Spe
+Tera Type: Ghost
+.Scale= 255
+Timid Nature";
+
+        private const string Arceus =
+            @"Arceus @ Ability Shield
+Ability: Multitype
+Shiny: Yes
+Ball: Moon
+";
     }
 }
