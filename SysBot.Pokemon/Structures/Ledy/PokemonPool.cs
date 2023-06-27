@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using SysBot.Pokemon.Structures;
 
 namespace SysBot.Pokemon
 {
@@ -12,11 +13,16 @@ namespace SysBot.Pokemon
         private readonly int ExpectedSize = new T().Data.Length;
         private readonly BaseConfig Settings;
         private bool Randomized => Settings.Shuffled;
+        private readonly IFileProvider<PKM> PkmFileProvider;
 
         public readonly Dictionary<string, LedyRequest<T>> Files = new();
         private int Counter;
 
-        public PokemonPool(BaseConfig settings) => Settings = settings;
+        public PokemonPool(BaseConfig settings, IFileProvider<PKM> pkmFileProvider)
+        {
+            Settings = settings;
+            PkmFileProvider = pkmFileProvider;
+        }
 
         public T GetRandomPoke()
         {
@@ -164,6 +170,27 @@ namespace SysBot.Pokemon
                 return true;
 
             return false;
+        }
+
+        public T? AttemptFetchFromFolder(string folder, string preset)
+        {
+            try
+            {
+                var pkm = PkmFileProvider.GetFileAsData(folder, preset);
+
+                return pkm switch
+                {
+                    null => null,
+                    T pk => pk,
+                    _ => EntityConverter.ConvertToType(pkm, typeof(T), out _) as T,
+                };
+            }
+            catch (Exception ex)
+            {
+                LogUtil.LogSafe(ex, nameof(PokemonPool<T>));
+            }
+
+            return null;
         }
     }
 }

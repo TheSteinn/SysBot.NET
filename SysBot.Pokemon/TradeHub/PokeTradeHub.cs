@@ -1,6 +1,7 @@
 ﻿using PKHeX.Core;
 using SysBot.Base;
 using System.Collections.Concurrent;
+using SysBot.Pokemon.Structures;
 
 namespace SysBot.Pokemon
 {
@@ -13,7 +14,7 @@ namespace SysBot.Pokemon
         public PokeTradeHub(PokeTradeHubConfig config)
         {
             Config = config;
-            var pool = new PokemonPool<T>(config);
+            var pool = new PokemonPool<T>(config, PkmFileProvider);
             Ledy = new LedyDistributor<T>(pool);
             BotSync = new BotSynchronizer(config.Distribution);
             BotSync.BarrierReleasingActions.Add(() => LogUtil.LogInfo($"{BotSync.Barrier.ParticipantCount} bots released.", "Barrier"));
@@ -25,6 +26,8 @@ namespace SysBot.Pokemon
 
         public readonly PokeTradeHubConfig Config;
         public readonly BotSynchronizer BotSync;
+
+        private readonly PokemonFileProvider PkmFileProvider = new();
 
         /// <summary> Trade Bots only, used to delegate multi-player tasks </summary>
         public readonly ConcurrentPool<PokeRoutineExecutorBase> Bots = new();

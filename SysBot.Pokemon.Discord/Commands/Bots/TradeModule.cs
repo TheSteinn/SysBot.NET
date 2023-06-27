@@ -155,6 +155,40 @@ namespace SysBot.Pokemon.Discord
             await TradeAsyncAttachUser(code, _).ConfigureAwait(false);
         }
 
+        public async Task TradePresetAsync([Summary("Trade Code")] int code, [Summary("Showdown Set")] [Remainder] string content)
+        {
+            try
+            {
+                var me = SysCord<T>.Runner;
+                var hub = me.Hub;
+                var pkm = hub.Ledy.Pool.AttemptFetchFromFolder(SysCord<T>.Runner.Hub.Config.Folder.DistributeFolder,
+                    content.Trim());
+
+                if (pkm is null)
+                {
+                    var imsg = $"Oops! An unexpected problem happened with this preset:\n```{string.Join("\n", content)}```";
+                    await ReplyAsync(imsg).ConfigureAwait(false);
+                    return;
+                }
+
+                pkm.ResetPartyStats();
+                var sig = Context.User.GetFavor();
+                await AddTradeToQueueAsync(code, Context.User.Username, pkm, sig, Context.User).ConfigureAwait(false);;
+            }
+            catch (Exception ex)
+            {
+                LogUtil.LogSafe(ex, nameof(TradeModule<T>));
+                var msg = $"Oops! An unexpected problem happened with this preset:\n```{string.Join("\n", content)}```";
+                await ReplyAsync(msg).ConfigureAwait(false);
+            }
+        }
+
+        public async Task TradePresetAsync([Summary("Showdown Set")] [Remainder] string content)
+        {
+            var code = Info.GetRandomTradeCode();
+            await TradePresetAsync(code, content).ConfigureAwait(false);
+        }
+
         private async Task TradeAsyncAttach(int code, RequestSignificance sig, SocketUser usr)
         {
             var attachment = Context.Message.Attachments.FirstOrDefault();
