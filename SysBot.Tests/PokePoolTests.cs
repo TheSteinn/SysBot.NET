@@ -62,7 +62,7 @@ namespace SysBot.Tests
             // Arrange
             var pkmFileProvider = new Mock<IFileProvider<PKM>>();
             pkmFileProvider.Setup(p =>
-                p.GetFileAsData(It.IsAny<string>(), It.IsAny<string>())).Returns((PKM) null);
+                p.GetFileAsData(It.IsAny<string>(), It.IsAny<string>())).Returns((PKM) null!);
             var pool = new PokemonPool<PK9>(new PokeTradeHubConfig(), pkmFileProvider.Object);
             
             // Act and Assert
