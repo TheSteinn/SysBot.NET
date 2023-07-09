@@ -155,6 +155,10 @@ namespace SysBot.Pokemon.Discord
             await TradeAsyncAttachUser(code, _).ConfigureAwait(false);
         }
 
+        [Command("preset")]
+        [Alias("ps")]
+        [Summary("Makes the bot trade you the specified preset Pokémon.")]
+        [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
         public async Task TradePresetAsync([Summary("Trade Code")] int code, [Summary("Showdown Set")] [Remainder] string content)
         {
             try
@@ -183,6 +187,10 @@ namespace SysBot.Pokemon.Discord
             }
         }
 
+        [Command("preset")]
+        [Alias("ps")]
+        [Summary("Makes the bot trade you the specified preset Pokémon.")]
+        [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
         public async Task TradePresetAsync([Summary("Showdown Set")] [Remainder] string content)
         {
             var code = Info.GetRandomTradeCode();
