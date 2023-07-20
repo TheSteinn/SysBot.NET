@@ -72,4 +72,75 @@ public class TradeAdditions<T> : ModuleBase<SocketCommandContext> where T : PKM,
         var code = Info.GetRandomTradeCode();
         await TradePresetAsync(code, content).ConfigureAwait(false);
     }
+
+    [Command("egg")]
+    [Summary("Makes the bot trade you an egg for the requested Pokémon")]
+    [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
+    public async Task RequestEggAsync([Remainder] string content)
+    {
+        var code = Info.GetRandomTradeCode();
+        await RequestEggAsync(code, content).ConfigureAwait(false);
+    }
+
+    [Command("egg")]
+    [Summary("Makes the bot trade you an egg for the requested Pokémon")]
+    [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
+    public async Task RequestEggAsync([Summary("Trade Code")] int code,
+        [Summary("The Pokémon species you want")] [Remainder] string content)
+    {
+        var template = EggHelper.MapToTemplate(content, out var templResult, out var set);
+        if (!"SUCCESS".Equals(templResult))
+        {
+            await ReplyAsync(templResult).ConfigureAwait(false);
+            return;
+        }
+
+        if (template == null || set == null)
+        {
+            await ReplyAsync("Unable to convert the request to a viable template for an Egg").ConfigureAwait(false);
+            return;
+        }
+
+        try
+        {
+            var sav = AutoLegalityWrapper.GetTrainerInfo<T>();
+            var pkm = sav.GetLegal(template, out var result);
+            var la = new LegalityAnalysis(pkm);
+            var spec = GameInfo.Strings.Species[template.Species];
+            pkm = EntityConverter.ConvertToType(pkm, typeof(T), out _) ?? pkm;
+            if (pkm is not T pk || !la.Valid)
+            {
+                var reason = result switch
+                {
+                    "Timeout" => $"That {spec} set took too long to generate.",
+                    "VersionMismatch" => "Request refused: PKHeX and Auto-Legality Mod version mismatch.",
+                    _ => $"I wasn't able to create a {spec} from that set."
+                };
+                var imsg = $"Oops! {reason}";
+                if (result == "Failed")
+                    imsg += $"\n{AutoLegalityWrapper.GetLegalizationHint(template, sav, pkm)}";
+                await ReplyAsync(imsg).ConfigureAwait(false);
+                return;
+            }
+
+            pk.ResetPartyStats();
+
+            if (!pk.CanBeTraded())
+            {
+                await ReplyAsync("Provided Pokémon content is blocked from trading!").ConfigureAwait(false);
+                return;
+            }
+
+            var sig = Context.User.GetFavor();
+            await QueueHelper<T>.AddToQueueAsync(Context, code, Context.User.Username, sig, pk,
+                PokeRoutineType.LinkTrade, PokeTradeType.Specific).ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            LogUtil.LogSafe(ex, nameof(TradeModule<T>));
+            var msg =
+                $"Oops! An unexpected problem happened with this Set:\n```{string.Join("\n", set.GetSetLines())}```";
+            await ReplyAsync(msg).ConfigureAwait(false);
+        }
+    }
 }
