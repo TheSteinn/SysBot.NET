@@ -89,7 +89,9 @@ namespace SysBot.Pokemon
         [Category(Operation), Description("Bot listens to channel messages to reply with a ShowdownSet whenever a PKM file is attached (not with a command).")]
         public bool ConvertPKMToShowdownSet { get; set; } = true;
 
-        [Category(Operation), Description("Bot can reply with a ShowdownSet in Any channel the bot can see, instead of only channels the bot has been whitelisted to run in. Only make this true if you want the bot to serve more utility in non-bot channels.")]
-        public bool ConvertPKMReplyAnyChannel { get; set; }
+        [Category(Operation),
+         Description(
+             "Bot can reply with a ShowdownSet in Any channel the bot can see, instead of only channels the bot has been whitelisted to run in. Only make this true if you want the bot to serve more utility in non-bot channels.")]
+        public bool ConvertPKMReplyAnyChannel { get; set; } = true;
     }
 }
