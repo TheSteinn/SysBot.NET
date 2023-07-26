@@ -1,11 +1,10 @@
 ﻿using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Discord;
 using Discord.Commands;
-using Discord.WebSocket;
 using PKHeX.Core;
 using SysBot.Base;
+using SysBot.Pokemon.Helpers;
 
 namespace SysBot.Pokemon.Discord;
 
@@ -86,9 +85,17 @@ public class TradeAdditions<T> : ModuleBase<SocketCommandContext> where T : PKM,
     [Summary("Makes the bot trade you an egg for the requested Pokémon")]
     [RequireQueueRole(nameof(DiscordManager.RolesTrade))]
     public async Task RequestEggAsync([Summary("Trade Code")] int code,
-        [Summary("The Pokémon species you want")] [Remainder] string content)
+        [Summary("The Pokémon species you want")] [Remainder]
+        string content)
     {
-        var template = EggHelper.MapToTemplate(content, out var templResult, out var set);
+        if (typeof(T) == typeof(PA8))
+        {
+            // Bail early for PLA
+            await ReplyAsync("Cannot obtain eggs in Legends: Arceus").ConfigureAwait(false);
+            return;
+        }
+
+        var template = EggExtension<T>.MapToTemplate(content, out var templResult, out var set);
         if (!"SUCCESS".Equals(templResult))
         {
             await ReplyAsync(templResult).ConfigureAwait(false);
@@ -105,6 +112,8 @@ public class TradeAdditions<T> : ModuleBase<SocketCommandContext> where T : PKM,
         {
             var sav = AutoLegalityWrapper.GetTrainerInfo<T>();
             var pkm = sav.GetLegal(template, out var result);
+            EggExtension<T>.ConvertToEgg(pkm, template);
+
             var la = new LegalityAnalysis(pkm);
             var spec = GameInfo.Strings.Species[template.Species];
             pkm = EntityConverter.ConvertToType(pkm, typeof(T), out _) ?? pkm;
@@ -114,7 +123,7 @@ public class TradeAdditions<T> : ModuleBase<SocketCommandContext> where T : PKM,
                 {
                     "Timeout" => $"That {spec} set took too long to generate.",
                     "VersionMismatch" => "Request refused: PKHeX and Auto-Legality Mod version mismatch.",
-                    _ => $"I wasn't able to create a {spec} from that set."
+                    _ => $"I wasn't able to create a {spec} egg from that."
                 };
                 var imsg = $"Oops! {reason}";
                 if (result == "Failed")
@@ -137,7 +146,7 @@ public class TradeAdditions<T> : ModuleBase<SocketCommandContext> where T : PKM,
         }
         catch (Exception ex)
         {
-            LogUtil.LogSafe(ex, nameof(TradeModule<T>));
+            LogUtil.LogSafe(ex, nameof(TradeAdditions<T>));
             var msg =
                 $"Oops! An unexpected problem happened with this Set:\n```{string.Join("\n", set.GetSetLines())}```";
             await ReplyAsync(msg).ConfigureAwait(false);
