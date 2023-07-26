@@ -4,7 +4,7 @@ using PKHeX.Core.AutoMod;
 
 namespace SysBot.Pokemon.Helpers;
 
-public class EggExtension<T> where T : PKM, new()
+public class EggExtension<T> where T : PKM
 {
     public static IBattleTemplate? MapToTemplate(string species, out string msg, out ShowdownSet? set)
     {
